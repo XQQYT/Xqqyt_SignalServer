@@ -2,6 +2,7 @@
 #include <boost/beast.hpp>
 #include <iostream>
 #include <nlohmann/json.hpp>
+#include <csignal>
 
 namespace asio = boost::asio;
 namespace beast = boost::beast;
@@ -9,12 +10,30 @@ namespace websocket = beast::websocket;
 using tcp = asio::ip::tcp;
 using json = nlohmann::json;
 
+asio::io_context ioc;
+tcp::resolver resolver(ioc);
+websocket::stream<tcp::socket> ws(ioc);
+
+// 处理 Ctrl+C 事件
+void signal_handler(int signal) {
+    if (signal == SIGINT) {
+        std::cout << "\nCtrl+C detected. Closing WebSocket connection..." << std::endl;
+        if (ws.is_open()) {
+            boost::system::error_code ec;
+            ws.close(websocket::close_code::normal, ec);
+            if (ec) {
+                std::cerr << "Error closing WebSocket: " << ec.message() << std::endl;
+            }
+        }
+        ioc.stop();  // 停止 io_context
+        exit(0);
+    }
+}
+
 void websocket_client(const std::string& host, const std::string& port, const std::string& client_id) {
     try {
-        asio::io_context ioc;
-        tcp::resolver resolver(ioc);
-        websocket::stream<tcp::socket> ws(ioc);
-        
+
+        signal(SIGINT, signal_handler);
         // 解析地址并连接
         auto const results = resolver.resolve(host, port);
         asio::connect(ws.next_layer(), results.begin(), results.end());
