@@ -20,6 +20,7 @@ void send_to_client(const std::string& target_id, const std::string& message) {
     std::lock_guard<std::mutex> lock(clients_mutex);
     if (id_clients.find(target_id) != id_clients.end()) {
         id_clients[target_id]->write(asio::buffer(message));
+        std::cout<<"send to "<<target_id<<"  "<<message<<std::endl;
     } else {
         std::cerr << "Client " << target_id << " not found!" << std::endl;
     }
@@ -87,8 +88,7 @@ void deal_client_msg(int client_socket) {
             std::cout << "Client registered: " << client_id << std::endl;
         } else {
             std::string target_id = msg["target"];
-            //send_to_client(target_id, received_message);
-            std::cout<<received_message<<std::endl;
+            send_to_client(target_id, received_message);
         }
         
     } catch (const std::exception& e) {
