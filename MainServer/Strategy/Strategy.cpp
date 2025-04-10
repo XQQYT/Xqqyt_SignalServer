@@ -1,5 +1,6 @@
 #include "Strategy.h"
 #include <iostream>
+#include "Server.h"
 // 初始化静态成员
 std::unordered_map<std::string, std::function<Strategy*()>> Strategy::type_create_map;
 
@@ -30,4 +31,17 @@ std::unique_ptr<Strategy> Strategy::getStrategy(std::string&& type) {
 
 void MessageStrategy::run(json&& msg) {
     std::cout<<"strategy   "<<msg<<std::endl;
+    if(msg.contains("message") && msg.contains("user_id") && msg.contains("target_id"))
+    {
+        std::string user_id = msg["user_id"];
+        std::string target_id = msg["target_id"];
+        if(Server::getInstance().hasID(user_id) && Server::getInstance().hasID(target_id))
+        {
+            Server::getInstance().send_to_client(user_id,target_id,msg["message"]);
+        }
+        else
+        {
+            std::cout<<"target host is off-line"<<std::endl;
+        }
+    }
 }

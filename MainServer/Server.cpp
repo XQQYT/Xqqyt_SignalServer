@@ -1,6 +1,17 @@
 #include "Server.h"
+#include "MessageParser.h"
 
-void Server::send_to_client(const std::string& target_id, const std::string& message) {
+Server::Server():parser(std::make_unique<MessageParser>())
+{
+
+};
+
+Server::~Server()
+{
+
+};
+
+void Server::send_to_client(const std::string& user_id,const std::string& target_id, const std::string& message) {
     std::lock_guard<std::mutex> lock(clients_mutex);
     if (id_clients.find(target_id) != id_clients.end()) {
         id_clients[target_id]->write(asio::buffer(message));
@@ -71,12 +82,13 @@ void Server::deal_client_msg(int client_socket) {
                         id_clients.erase(tmp_id);
                     }
                     id_clients[client_id]=need_to_record_client_ws;
-                    client_ws->write(asio::buffer("done"));
+                    json respond = {{"type","register_result"},{"content",{{"status","success"}}}};
+                    client_ws->write(asio::buffer(respond.dump()));
                 }
             }
             else
             {
-                parser.parseMsg(std::move(msg["type"]), std::move(msg["content"]));
+                parser->parseMsg(std::move(msg["type"]), std::move(msg["content"]));
             }
     } catch (const std::exception& e) {
         std::cerr << "WebSocket error: " << e.what() << std::endl;

@@ -5,8 +5,9 @@
 #include <functional>
 #include <unordered_map>
 #include <memory> 
-
 using json = nlohmann::json;
+
+class Server;
 
 class Strategy {
 public:
