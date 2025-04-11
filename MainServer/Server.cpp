@@ -11,11 +11,18 @@ Server::~Server()
 
 };
 
-void Server::send_to_client(const std::string& user_id,const std::string& target_id, const std::string& message) {
+void Server::send_to_client(const std::string& target_id, const std::string& message) {
     std::lock_guard<std::mutex> lock(clients_mutex);
     if (id_clients.find(target_id) != id_clients.end()) {
-        id_clients[target_id]->write(asio::buffer(message));
-        std::cout<<"send to "<<target_id<<"  "<<message<<std::endl;
+        if(id_clients[target_id]->is_open())
+        {
+            id_clients[target_id]->write(asio::buffer(message));
+            std::cout<<"send to "<<target_id<<"  "<<message<<std::endl;
+        }
+        else
+        {
+            std::cout<<"client is disconnected"<<std::endl;
+        }
     } else {
         std::cerr << "Client " << target_id << " not found!" << std::endl;
     }
@@ -71,20 +78,28 @@ void Server::deal_client_msg(int client_socket) {
         if(msg.contains("type") && msg.contains("content"))
             if (msg["type"] == "register") 
             {
-                client_id = msg["content"]["id"];
-                {
-                    auto need_to_record_client_ws = client_ws;
-                    std::string tmp_id = "tmp_" + std::to_string(client_socket);
-                    std::lock_guard<std::mutex> lock(clients_mutex);
-                    if(id_clients.find(tmp_id) != id_clients.end())
-                    {                    
-                        need_to_record_client_ws = id_clients[tmp_id];
-                        id_clients.erase(tmp_id);
+                try{
+                    client_id = msg["content"]["id"];
+                    {
+                        auto need_to_record_client_ws = client_ws;
+                        std::string tmp_id = "tmp_" + std::to_string(client_socket);
+                        std::lock_guard<std::mutex> lock(clients_mutex);
+                        if(id_clients.find(tmp_id) != id_clients.end())
+                        {                    
+                            need_to_record_client_ws = id_clients[tmp_id];
+                            id_clients.erase(tmp_id);
+                        }
+                        id_clients[client_id]=need_to_record_client_ws;
+                        json respond = {{"type","register_result"},{"content",{{"status","success"}}}};
+                        client_ws->write(asio::buffer(respond.dump()));
                     }
-                    id_clients[client_id]=need_to_record_client_ws;
-                    json respond = {{"type","register_result"},{"content",{{"status","success"}}}};
+                } catch (const std::exception& e) 
+                {
+                    json respond = {{"type","register_result"},{"content",{{"status","failed"}}}};
                     client_ws->write(asio::buffer(respond.dump()));
+                    std::cerr << "failed to register user " << e.what() << std::endl;
                 }
+                
             }
             else
             {

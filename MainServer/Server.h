@@ -29,7 +29,8 @@ public:
         return instance;
     }
     void startServer();
-    void send_to_client(const std::string& user_id, const std::string& target_id, const std::string& message);
+    void send_to_client(const std::string& target_id, const std::string& message);
+    
     //处理客户端连接请求，并建立websocket连接 
     void accept_and_ws_shakehand(int listen_fd,int epoll);
     //处理客户端消息
