@@ -15,6 +15,7 @@ namespace {
     struct StrategyInitializer {
         StrategyInitializer() {
             Strategy::registerStrategy("message", []() { return new MessageStrategy(); });
+            Strategy::registerStrategy("get_target_status", []() { return new GetTargetStatusStrategy(); });
         }
     };
     StrategyInitializer initializer;
@@ -30,18 +31,43 @@ std::unique_ptr<Strategy> Strategy::getStrategy(std::string&& type) {
 }
 
 void MessageStrategy::run(json&& msg) {
-    std::cout<<"strategy   "<<msg<<std::endl;
     if(msg.contains("message") && msg.contains("user_id") && msg.contains("target_id"))
     {
         std::string user_id = msg["user_id"];
         std::string target_id = msg["target_id"];
         if(Server::getInstance().hasID(user_id) && Server::getInstance().hasID(target_id))
         {
-            Server::getInstance().send_to_client(user_id,target_id,msg["message"]);
+            Server::getInstance().send_to_client(target_id,msg["message"]);
         }
         else
         {
             std::cout<<"target host is off-line"<<std::endl;
+        }
+    }
+}
+
+void GetTargetStatusStrategy::run(json&& msg) {
+    if(msg.contains("user_id") && msg.contains("target_id"))
+    {
+        std::string user_id = msg["user_id"];
+        std::string target_id = msg["target_id"];
+        if(Server::getInstance().hasID(user_id))
+        {
+            std::string status;
+            if(Server::getInstance().hasID(target_id))
+            {
+                status = "True";
+            }
+            else
+            {
+                status = "False";
+            }
+            json response_json = {{"type","target_status"},{"content",{{"status",status}}}};
+            Server::getInstance().send_to_client(user_id,response_json.dump());
+        }
+        else
+        {
+            std::cout<<"Illegal User Id"<<std::endl;
         }
     }
 }

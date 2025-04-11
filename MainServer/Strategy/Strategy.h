@@ -32,4 +32,11 @@ public:
     ~MessageStrategy() = default;
 };
 
+class GetTargetStatusStrategy : public Strategy {
+    public: 
+        GetTargetStatusStrategy() = default;
+        void run(json&& msg) override;
+        ~GetTargetStatusStrategy() = default;
+    };
+
 #endif
