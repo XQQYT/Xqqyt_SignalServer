@@ -12,7 +12,7 @@ class Server;
 class Strategy {
 public:
     Strategy() = default;
-    virtual void run(json&& msg) = 0;
+    virtual void run(json msg) = 0;
     virtual ~Strategy() = default;
     
     static std::unique_ptr<Strategy> getStrategy(std::string&& type);
@@ -28,15 +28,29 @@ private:
 class MessageStrategy : public Strategy {
 public: 
     MessageStrategy() = default;
-    void run(json&& msg) override;
+    void run(json msg) override;
     ~MessageStrategy() = default;
 };
 
 class GetTargetStatusStrategy : public Strategy {
-    public: 
-        GetTargetStatusStrategy() = default;
-        void run(json&& msg) override;
-        ~GetTargetStatusStrategy() = default;
-    };
+public: 
+    GetTargetStatusStrategy() = default;
+    void run(json msg) override;
+    ~GetTargetStatusStrategy() = default;
+};
+
+class ConnectRequestStrategy : public Strategy {
+public: 
+    ConnectRequestStrategy() = default;
+    void run(json msg) override;
+    ~ConnectRequestStrategy() = default;
+};
+
+class ConnectRequestResultStrategy : public Strategy {
+public: 
+    ConnectRequestResultStrategy() = default;
+    void run(json msg) override;
+    ~ConnectRequestResultStrategy() = default;
+};
 
 #endif
