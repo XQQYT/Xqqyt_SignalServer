@@ -17,6 +17,8 @@ namespace {
             Strategy::registerStrategy("message", []() { return new MessageStrategy(); });
             Strategy::registerStrategy("get_target_status", []() { return new GetTargetStatusStrategy(); });
             Strategy::registerStrategy("connect_request", []() { return new ConnectRequestStrategy(); });
+            Strategy::registerStrategy("connect_request_result", []() { return new ConnectRequestResultStrategy(); });
+
         }
     };
     StrategyInitializer initializer;
@@ -80,11 +82,26 @@ void ConnectRequestStrategy::run(json msg)
     {
         std::string user_id = msg["user_id"];
         std::string target_id = msg["target_id"];
-            json response_json = {{"type","connect_request"},{"content",{{"target_id",user_id}}}};
-            Server::getInstance().send_to_client(target_id,response_json.dump());
-        }
-        else
-        {
-            std::cout<<"Illegal User Id"<<std::endl;
-        }
+        json response_json = {{"type","connect_request"},{"content",{{"target_id",user_id}}}};
+        Server::getInstance().send_to_client(target_id,response_json.dump());
+    }
+    else
+    {
+        std::cout<<"Illegal User Id"<<std::endl;
+    }
+}
+
+void ConnectRequestResultStrategy::run(json msg)
+{
+    if(msg.contains("user_id") && msg.contains("target_id"))
+    {
+        std::string user_id = msg["user_id"];
+        std::string target_id = msg["target_id"];
+        json response_json = {{"type","connect_request_result"},{"content",{{"target_id",user_id},{"result",msg["result"]}}}};
+        Server::getInstance().send_to_client(target_id,response_json.dump());
+    }
+    else
+    {
+        std::cout<<"Illegal User Id"<<std::endl;
+    }
 }

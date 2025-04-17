@@ -33,17 +33,24 @@ public:
 };
 
 class GetTargetStatusStrategy : public Strategy {
-    public: 
-        GetTargetStatusStrategy() = default;
-        void run(json msg) override;
-        ~GetTargetStatusStrategy() = default;
-    };
+public: 
+    GetTargetStatusStrategy() = default;
+    void run(json msg) override;
+    ~GetTargetStatusStrategy() = default;
+};
 
 class ConnectRequestStrategy : public Strategy {
-    public: 
+public: 
     ConnectRequestStrategy() = default;
-        void run(json msg) override;
-        ~ConnectRequestStrategy() = default;
-    };
+    void run(json msg) override;
+    ~ConnectRequestStrategy() = default;
+};
+
+class ConnectRequestResultStrategy : public Strategy {
+public: 
+    ConnectRequestResultStrategy() = default;
+    void run(json msg) override;
+    ~ConnectRequestResultStrategy() = default;
+};
 
 #endif
