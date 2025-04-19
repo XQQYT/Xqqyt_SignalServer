@@ -19,7 +19,7 @@ namespace {
             Strategy::registerStrategy("connect_request", []() { return new ConnectRequestStrategy(); });
             Strategy::registerStrategy("connect_request_result", []() { return new ConnectRequestResultStrategy(); });
             Strategy::registerStrategy("sdp_offer", []() { return new SdpOfferStrategy(); });
-
+            Strategy::registerStrategy("sdp_answer", []() { return new SdpAnswerStrategy(); });
         }
     };
     StrategyInitializer initializer;
@@ -114,6 +114,21 @@ void SdpOfferStrategy::run(json msg)
         std::string user_id = msg["user_id"];
         std::string target_id = msg["target_id"];
         json response_json = {{"type","sdp_offer"},{"content",{{"target_id",user_id},{"sdp",msg["sdp"]}}}};
+        Server::getInstance().send_to_client(target_id,response_json.dump());
+    }
+    else
+    {
+        std::cout<<"Illegal User Id"<<std::endl;
+    }
+}
+
+void SdpAnswerStrategy::run(json msg)
+{
+    if(msg.contains("user_id") && msg.contains("target_id"))
+    {
+        std::string user_id = msg["user_id"];
+        std::string target_id = msg["target_id"];
+        json response_json = {{"type","sdp_answer"},{"content",{{"target_id",user_id},{"sdp",msg["sdp"]}}}};
         Server::getInstance().send_to_client(target_id,response_json.dump());
     }
     else

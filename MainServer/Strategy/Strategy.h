@@ -60,4 +60,12 @@ SdpOfferStrategy() = default;
     ~SdpOfferStrategy() = default;
 };
 
+class SdpAnswerStrategy : public Strategy {
+public: 
+    SdpAnswerStrategy() = default;
+    void run(json msg) override;
+    ~SdpAnswerStrategy() = default;
+};
+    
+
 #endif
