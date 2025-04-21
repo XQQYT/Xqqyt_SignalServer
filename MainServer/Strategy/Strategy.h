@@ -66,6 +66,20 @@ public:
     void run(json msg) override;
     ~SdpAnswerStrategy() = default;
 };
+
+class IceCanDidateStrategy : public Strategy {
+public: 
+    IceCanDidateStrategy() = default;
+    void run(json msg) override;
+    ~IceCanDidateStrategy() = default;
+};
+
+class IceGatherDoneStrategy : public Strategy {
+public: 
+    IceGatherDoneStrategy() = default;
+    void run(json msg) override;
+    ~IceGatherDoneStrategy() = default;
+};
     
 
 #endif
