@@ -24,6 +24,6 @@ void MessageParser::parseMsg(std::string&& type,json&& msg)
         cur_strategy->run(std::move(msg));
     else
     {
-        std::cout<<"Don't support this type"<<std::endl;
+        std::cout<<"Don't support this type : "<<type<<std::endl;
     }
 }
