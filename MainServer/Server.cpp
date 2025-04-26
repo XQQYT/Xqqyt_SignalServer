@@ -94,22 +94,67 @@ void Server::async_read_message(std::shared_ptr<websocket> client_ws) {
     });
 }
 
+// void Server::send_to_client(const std::string& target_id, const std::string& message) {
+//     std::lock_guard<std::mutex> lock(clients_mutex);
+//     if (id_clients.find(target_id) != id_clients.end()) {
+//         auto ws = id_clients[target_id];
+//         if (ws->is_open()) {
+//             ws->async_write(asio::buffer(message), [target_id](system::error_code ec, std::size_t) {
+//                 if (ec) {
+//                     std::cerr << "Failed to send to " << target_id << ": " << ec.message() << std::endl;
+//                 } else {
+//                     std::cout << "Sent to " << target_id << std::endl;
+//                 }
+//             });
+//         } else {
+//             std::cerr << "Client " << target_id << " is not open!" << std::endl;
+//         }
+//     } else {
+//         std::cerr << "Client " << target_id << " not found!" << std::endl;
+//     }
+// }
+
 void Server::send_to_client(const std::string& target_id, const std::string& message) {
     std::lock_guard<std::mutex> lock(clients_mutex);
     if (id_clients.find(target_id) != id_clients.end()) {
         auto ws = id_clients[target_id];
         if (ws->is_open()) {
-            ws->async_write(asio::buffer(message), [target_id](system::error_code ec, std::size_t) {
-                if (ec) {
-                    std::cerr << "Failed to send to " << target_id << ": " << ec.message() << std::endl;
-                } else {
-                    std::cout << "Sent to " << target_id << std::endl;
-                }
-            });
-        } else {
-            std::cerr << "Client " << target_id << " is not open!" << std::endl;
+            // 获取或创建发送队列
+            auto& queue = send_queues[target_id];
+            
+            // 将消息加入队列
+            queue.push(message);
+            
+            // 如果队列中只有这一个消息，开始发送
+            if (queue.size() == 1) {
+                start_sending(target_id, ws);
+            }
         }
-    } else {
-        std::cerr << "Client " << target_id << " not found!" << std::endl;
     }
+}
+
+void Server::start_sending(const std::string& target_id, std::shared_ptr<websocket> ws) {
+    auto& queue = send_queues[target_id];
+    
+    ws->async_write(
+        asio::buffer(queue.front()),
+        [this, target_id, ws](system::error_code ec, std::size_t) {
+            std::lock_guard<std::mutex> lock(clients_mutex);
+            auto& queue = send_queues[target_id];
+            
+            if (ec) {
+                std::cerr << "Failed to send to " << target_id << ": " << ec.message() << std::endl;
+                // 清除队列
+                std::queue<std::string>().swap(queue);
+                return;
+            }
+            
+            // 移除已发送的消息
+            queue.pop();
+            
+            // 如果还有消息，继续发送
+            if (!queue.empty()) {
+                start_sending(target_id, ws);
+            }
+        });
 }

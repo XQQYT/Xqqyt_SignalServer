@@ -9,6 +9,7 @@
 #include <boost/beast.hpp>
 #include <boost/beast/websocket.hpp>
 #include <nlohmann/json.hpp>
+#include <queue>
 
 using tcp = boost::asio::ip::tcp;
 using websocket = boost::beast::websocket::stream<tcp::socket>;
@@ -39,6 +40,7 @@ public:
     // {
     //     return std::make_shared<std::unordered_map<int,std::shared_ptr<websocket>>>(sd_clients);
     // }
+    void start_sending(const std::string& target_id, std::shared_ptr<websocket> ws);
 private:
     Server();
 
@@ -53,4 +55,6 @@ private:
 
     void do_accept();
     void async_read_message(std::shared_ptr<websocket> client_ws);
+    private:
+    std::unordered_map<std::string, std::queue<std::string>> send_queues;
 };
