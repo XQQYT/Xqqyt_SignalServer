@@ -53,6 +53,13 @@ public:
     ~ConnectRequestResultStrategy() = default;
 };
 
+class ReadyStrategy : public Strategy {
+public: 
+    ReadyStrategy() = default;
+    void run(json msg) override;
+    ~ReadyStrategy() = default;
+};
+
 class SdpOfferStrategy : public Strategy {
 public: 
 SdpOfferStrategy() = default;
