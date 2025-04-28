@@ -18,6 +18,7 @@ namespace {
             Strategy::registerStrategy("get_target_status", []() { return new GetTargetStatusStrategy(); });
             Strategy::registerStrategy("connect_request", []() { return new ConnectRequestStrategy(); });
             Strategy::registerStrategy("connect_request_result", []() { return new ConnectRequestResultStrategy(); });
+            Strategy::registerStrategy("ready", []() { return new ReadyStrategy(); });
             Strategy::registerStrategy("sdp_offer", []() { return new SdpOfferStrategy(); });
             Strategy::registerStrategy("sdp_answer", []() { return new SdpAnswerStrategy(); });
             Strategy::registerStrategy("ice_candidate", []() { return new IceCanDidateStrategy(); });
@@ -161,6 +162,21 @@ void IceGatherDoneStrategy::run(json msg)
         std::string user_id = msg["user_id"];
         std::string target_id = msg["target_id"];
         json response_json = {{"type","ice_gather_done"},{"content",{{"target_id",user_id}}}};
+        Server::getInstance().send_to_client(target_id,response_json.dump());
+    }
+    else
+    {
+        std::cout<<"Illegal User Id"<<std::endl;
+    }
+}
+
+void ReadyStrategy::run(json msg)
+{
+    if(msg.contains("user_id") && msg.contains("target_id"))
+    {
+        std::string user_id = msg["user_id"];
+        std::string target_id = msg["target_id"];
+        json response_json = {{"type","ready"},{"content",{{"target_id",user_id}}}};
         Server::getInstance().send_to_client(target_id,response_json.dump());
     }
     else
