@@ -94,26 +94,6 @@ void Server::async_read_message(std::shared_ptr<websocket> client_ws) {
     });
 }
 
-// void Server::send_to_client(const std::string& target_id, const std::string& message) {
-//     std::lock_guard<std::mutex> lock(clients_mutex);
-//     if (id_clients.find(target_id) != id_clients.end()) {
-//         auto ws = id_clients[target_id];
-//         if (ws->is_open()) {
-//             ws->async_write(asio::buffer(message), [target_id](system::error_code ec, std::size_t) {
-//                 if (ec) {
-//                     std::cerr << "Failed to send to " << target_id << ": " << ec.message() << std::endl;
-//                 } else {
-//                     std::cout << "Sent to " << target_id << std::endl;
-//                 }
-//             });
-//         } else {
-//             std::cerr << "Client " << target_id << " is not open!" << std::endl;
-//         }
-//     } else {
-//         std::cerr << "Client " << target_id << " not found!" << std::endl;
-//     }
-// }
-
 void Server::send_to_client(const std::string& target_id, const std::string& message) {
     std::lock_guard<std::mutex> lock(clients_mutex);
     if (id_clients.find(target_id) != id_clients.end()) {
@@ -130,6 +110,46 @@ void Server::send_to_client(const std::string& target_id, const std::string& mes
                 start_sending(target_id, ws);
             }
         }
+    }
+}
+
+void Server::closeClient(const std::string& id)
+{
+    std::lock_guard<std::mutex> lock(clients_mutex);
+    
+    // 1. 查找客户端
+    auto it = id_clients.find(id);
+    if (it == id_clients.end()) {
+        std::cerr << "Client " << id << " not found" << std::endl;
+        return;
+    }
+
+    auto ws = it->second;
+    
+    // 2. 关闭WebSocket连接（安全异步关闭）
+    if (ws->is_open()) {
+        // 异步关闭连接
+        ws->async_close(
+            boost::beast::websocket::close_code::normal,
+            [this, id, ws](system::error_code ec) {
+                if (ec) {
+                    std::cerr << "Error closing connection for "
+                              << id << ": " << ec.message() << std::endl;
+                } else {
+                    std::cout << "Successfully closed connection for " << id << std::endl;
+                }
+                
+                // 3. 清理资源（需要再次加锁）
+                std::lock_guard<std::mutex> inner_lock(clients_mutex);
+                id_clients.erase(id);
+                send_queues.erase(id);
+            }
+        );
+    } else {
+        // 4. 如果连接已关闭，直接清理资源
+        id_clients.erase(it);
+        send_queues.erase(id);
+        std::cout << "Client " << id << " was already disconnected" << std::endl;
     }
 }
 

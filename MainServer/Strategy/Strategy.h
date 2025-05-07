@@ -87,6 +87,12 @@ public:
     void run(json msg) override;
     ~IceGatherDoneStrategy() = default;
 };
-    
+  
+class LogOutStrategy : public Strategy {
+    public: 
+        LogOutStrategy() = default;
+        void run(json msg) override;
+        ~LogOutStrategy() = default;
+    };
 
 #endif

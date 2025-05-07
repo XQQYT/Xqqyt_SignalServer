@@ -41,6 +41,7 @@ public:
     //     return std::make_shared<std::unordered_map<int,std::shared_ptr<websocket>>>(sd_clients);
     // }
     void start_sending(const std::string& target_id, std::shared_ptr<websocket> ws);
+    void closeClient(const std::string& id);
 private:
     Server();
 

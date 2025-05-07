@@ -23,6 +23,7 @@ namespace {
             Strategy::registerStrategy("sdp_answer", []() { return new SdpAnswerStrategy(); });
             Strategy::registerStrategy("ice_candidate", []() { return new IceCanDidateStrategy(); });
             Strategy::registerStrategy("ice_gather_done", []() { return new IceGatherDoneStrategy(); });
+            Strategy::registerStrategy("logout", []() { return new LogOutStrategy(); });
         }
     };
     StrategyInitializer initializer;
@@ -178,6 +179,19 @@ void ReadyStrategy::run(json msg)
         std::string target_id = msg["target_id"];
         json response_json = {{"type","ready"},{"content",{{"target_id",user_id}}}};
         Server::getInstance().send_to_client(target_id,response_json.dump());
+    }
+    else
+    {
+        std::cout<<"Illegal User Id"<<std::endl;
+    }
+}
+
+void LogOutStrategy::run(json msg)
+{
+    if(msg.contains("user_id"))
+    {
+        std::string user_id = msg["user_id"];
+        Server::getInstance().closeClient(user_id);
     }
     else
     {
