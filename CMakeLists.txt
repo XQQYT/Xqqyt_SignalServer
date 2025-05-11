@@ -30,6 +30,9 @@ include_directories(
     /usr/include/x86_64-linux-gnu
 )
 
+set(CMAKE_BUILD_RPATH "\$ORIGIN/")
+set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
+
 # 可执行文件
 add_executable(${PROJECT_NAME} ${SRC_PATH})
 
