@@ -1,3 +1,10 @@
+/*
+ * Xqqyt_SignalServer
+ * Author: XQQYT
+ * License: MIT
+ * Year: 2025
+ */
+
 #include "Strategy.h"
 #include <iostream>
 #include "Server.h"

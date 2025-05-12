@@ -1,3 +1,10 @@
+/*
+ * Xqqyt_SignalServer
+ * Author: XQQYT
+ * License: MIT
+ * Year: 2025
+ */
+
 #ifndef _STRATEGY_H
 #define _STRATEGY_H
 

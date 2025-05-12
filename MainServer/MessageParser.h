@@ -1,3 +1,10 @@
+/*
+ * Xqqyt_SignalServer
+ * Author: XQQYT
+ * License: MIT
+ * Year: 2025
+ */
+
 #ifndef _MESSAGEPARSER_H
 #define _MESSAGEPARSER_H
 
