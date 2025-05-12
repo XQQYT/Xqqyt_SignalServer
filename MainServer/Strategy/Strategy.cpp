@@ -83,11 +83,12 @@ void GetTargetStatusStrategy::run(json msg) {
 
 void ConnectRequestStrategy::run(json msg)
 {
-    if(msg.contains("user_id") && msg.contains("target_id"))
+    if(msg.contains("user_id") && msg.contains("target_id") && msg.contains("key"))
     {
         std::string user_id = msg["user_id"];
         std::string target_id = msg["target_id"];
-        json response_json = {{"type","connect_request"},{"content",{{"target_id",user_id}}}};
+        std::string key = msg["key"];
+        json response_json = {{"type","connect_request"},{"content",{{"target_id",user_id},{"key",key}}}};
         Server::getInstance().send_to_client(target_id,response_json.dump());
     }
     else
